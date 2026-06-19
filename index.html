@@ -398,12 +398,44 @@
     .pdf-nav-btn { width: 26px; height: 26px; font-size: 14px; }
     #pdf-page-info { font-size: 11px; min-width: 55px; }
     footer { font-size: 11px; padding: 1.25rem 1rem; }
+    #reviews .container > div { grid-template-columns: 1fr !important; }
   }
-  @media (max-width: 400px) {
-    .nav-links { gap: 0.5rem; }
-    .nav-links a { font-size: 10px; }
-    .hero-name { font-size: 24px; }
-    .materials-grid { grid-template-columns: 1fr 1fr !important; }
+  /* CAROUSEL */
+  .review-carousel {
+    position: relative; overflow: hidden;
+    border-radius: 14px; max-width: 360px; margin: 0 auto;
+  }
+  .review-track {
+    display: flex; transition: transform 0.4s ease;
+  }
+  .review-slide {
+    min-width: 100%; width: 100%;
+    object-fit: cover; border-radius: 14px;
+    display: block;
+  }
+  .carousel-btn {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    background: rgba(255,255,255,0.85); border: none; border-radius: 50%;
+    width: 36px; height: 36px; font-size: 18px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15); transition: background 0.15s;
+    color: var(--navy);
+  }
+  .carousel-btn:hover { background: #fff; }
+  .carousel-btn.left { left: 10px; }
+  .carousel-btn.right { right: 10px; }
+  .carousel-dots {
+    position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 6px;
+  }
+  .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: rgba(255,255,255,0.5); cursor: pointer;
+    transition: background 0.2s;
+  }
+  .dot.active { background: #fff; }
+  @media (max-width: 768px) {
+    #ig-reviews { grid-template-columns: 1fr !important; }
   }
 </style>
 </head>
@@ -418,6 +450,7 @@
     <li><a href="#courses">課程介紹</a></li>
     <li><a href="#materials">自編教材</a></li>
     <li><a href="#video">招生影片</a></li>
+    <li><a href="#reviews">學生好評</a></li>
   </ul>
 </nav>
 
@@ -645,11 +678,55 @@
 </div>
 </section>
 
+<!-- REVIEWS -->
+<section id="reviews" style="background: var(--section-bg);">
+<div class="container">
+  <p class="section-eyebrow">Student Reviews</p>
+  <h2 class="section-title">學生好評</h2>
+
+  <!-- 學生好評 1：四張圖輪播 -->
+  <div style="margin-bottom: 2.5rem;">
+    <div class="review-carousel">
+      <div class="review-track" id="track1">
+        <img src="review2_4.png" alt="學生好評" class="review-slide">
+        <img src="review2_1.png" alt="學生好評" class="review-slide">
+        <img src="review2_2.png" alt="學生好評" class="review-slide">
+        <img src="review2_3.png" alt="學生好評" class="review-slide">
+      </div>
+      <button class="carousel-btn left" onclick="moveCarousel('track1', -1)">&#8592;</button>
+      <button class="carousel-btn right" onclick="moveCarousel('track1', 1)">&#8594;</button>
+      <div class="carousel-dots" id="dots1">
+        <span class="dot active" onclick="goToSlide('track1','dots1',0)"></span>
+        <span class="dot" onclick="goToSlide('track1','dots1',1)"></span>
+        <span class="dot" onclick="goToSlide('track1','dots1',2)"></span>
+        <span class="dot" onclick="goToSlide('track1','dots1',3)"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 學生好評 2：IG embed -->
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; justify-items: center;" id="ig-reviews">
+    <blockquote class="instagram-media"
+      data-instgrm-permalink="https://www.instagram.com/p/DYMWUDlk00n/"
+      data-instgrm-version="14"
+      style="background:#fff; border:0; border-radius:12px; box-shadow:0 0 0 1px var(--border); margin:0; width:100%; max-width:480px;">
+    </blockquote>
+    <blockquote class="instagram-media"
+      data-instgrm-permalink="https://www.instagram.com/p/DW0Vuz9E_-V/"
+      data-instgrm-version="14"
+      style="background:#fff; border:0; border-radius:12px; box-shadow:0 0 0 1px var(--border); margin:0; width:100%; max-width:480px;">
+    </blockquote>
+  </div>
+
+</div>
+</section>
+
 <footer>
   © 林凡英文 · 呂昂衛老師　高中英文 × 學測 × 多益 × 英檢 × 寫作素養
 </footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script async src="https://www.instagram.com/embed.js"></script>
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
@@ -707,6 +784,29 @@ function closePdfModal() {
 document.getElementById('pdf-modal').addEventListener('click', function(e) {
   if (e.target === this) closePdfModal();
 });
+
+// Carousel
+const carouselState = {};
+function moveCarousel(trackId, dir) {
+  const track = document.getElementById(trackId);
+  const total = track.children.length;
+  if (!carouselState[trackId]) carouselState[trackId] = 0;
+  carouselState[trackId] = (carouselState[trackId] + dir + total) % total;
+  track.style.transform = `translateX(-${carouselState[trackId] * 100}%)`;
+  const dotsId = trackId.replace('track','dots');
+  updateDots(dotsId, carouselState[trackId]);
+}
+function goToSlide(trackId, dotsId, idx) {
+  const track = document.getElementById(trackId);
+  carouselState[trackId] = idx;
+  track.style.transform = `translateX(-${idx * 100}%)`;
+  updateDots(dotsId, idx);
+}
+function updateDots(dotsId, idx) {
+  const dots = document.getElementById(dotsId);
+  if (!dots) return;
+  dots.querySelectorAll('.dot').forEach((d,i) => d.classList.toggle('active', i === idx));
+}
 </script>
 </body>
 </html>
